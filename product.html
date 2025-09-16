@@ -1,8 +1,77 @@
 <!DOCTYPE html>
 <html lang="en">
-<head><meta charset="utf-8"><title>Product</title></head>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Product | Grafted E-Bikes</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <style>
+    body{font-family:Roboto;background:#0F0F0F;color:#fff}
+    .container{max-width:1000px;margin:0 auto;padding:20px}
+    .topbar{display:flex;justify-content:space-between;align-items:center}
+    .product-wrap{display:grid;grid-template-columns:1fr 1fr;gap:30px;margin-top:30px}
+    .product-wrap img{width:100%;height:420px;object-fit:cover;border-radius:8px}
+    .btn{background:#EBFF1A;color:#000;padding:10px 14px;border-radius:6px;text-decoration:none;cursor:pointer;border:none}
+    .small{font-size:14px;color:#ccc}
+  </style>
+</head>
 <body>
-  <h1>Product Page</h1>
-  <a href="cart.html">Go to Cart</a>
+  <div class="container">
+    <div class="topbar">
+      <a href="index.html" class="small"><i class="fas fa-arrow-left"></i> Back to shop</a>
+      <a href="cart.html" class="small">Cart (<span id="cartCount">0</span>)</a>
+    </div>
+
+    <div id="productArea" class="product-wrap" aria-live="polite"></div>
+
+  </div>
+
+  <script src="products.js"></script>
+  <script>
+    function getQueryParam(name) { const params = new URLSearchParams(window.location.search); return params.get(name); }
+    function getCart(){ return JSON.parse(localStorage.getItem('cart')||'[]'); }
+    function saveCart(c){ localStorage.setItem('cart', JSON.stringify(c)); updateCartCount(); }
+    function updateCartCount(){ const c = getCart().reduce((s,i)=>s+i.qty,0); document.getElementById('cartCount').textContent = c; }
+
+    const id = getQueryParam('id');
+    const product = getProductById(id);
+
+    const area = document.getElementById('productArea');
+    if(!product){
+      area.innerHTML = '<p>Product not found.</p>';
+    } else {
+      area.innerHTML = `
+        <div>
+          <img src="images/${product.img}" alt="${product.title}" onerror="this.src='images/placeholder.png'">
+        </div>
+        <div>
+          <h1>${product.title}</h1>
+          <p style="color:#EBFF1A;font-weight:700;font-size:22px">${product.currency}${product.price.toFixed(2)}</p>
+          <p>${product.description}</p>
+          <ul id="detailsList"></ul>
+          <div style="margin-top:16px">
+            <button class="btn" id="addBtn">Add to cart</button>
+            <a href="cart.html" class="btn" style="margin-left:8px">View cart</a>
+          </div>
+        </div>
+      `;
+      const dl = document.getElementById('detailsList');
+      product.details.forEach(d=>{
+        const li = document.createElement('li'); li.textContent = d; dl.appendChild(li);
+      });
+    }
+
+    document.getElementById('addBtn')?.addEventListener('click',()=>{
+      const cart = getCart();
+      const item = cart.find(i=>i.id===product.id);
+      if(item) item.qty++;
+      else cart.push({id: product.id, qty:1});
+      saveCart(cart);
+      alert('Added to cart');
+    });
+
+    updateCartCount();
+  </script>
 </body>
 </html>

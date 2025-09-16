@@ -1,8 +1,86 @@
 <!DOCTYPE html>
 <html lang="en">
-<head><meta charset="utf-8"><title>Cart</title></head>
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Cart | Grafted E-Bikes</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    body{background:#0F0F0F;color:#fff;font-family:Roboto}
+    .container{max-width:1000px;margin:0 auto;padding:20px}
+    table{width:100%;border-collapse:collapse;margin-top:20px}
+    th,td{padding:10px;text-align:left;border-bottom:1px solid #222}
+    .btn{background:#EBFF1A;color:#000;padding:8px 12px;border-radius:6px;border:none;cursor:pointer}
+    .muted{color:#bbb;font-size:14px}
+    .cart-actions{display:flex;gap:10px;align-items:center;margin-top:12px}
+  </style>
+</head>
 <body>
-  <h1>Your Cart</h1>
-  <a href="checkout.html">Go to Checkout</a>
+  <div class="container">
+    <h1>Your Cart</h1>
+    <div id="cartArea"></div>
+
+    <div style="margin-top:20px">
+      <a href="index.html" class="btn">Continue shopping</a>
+      <a id="checkoutBtn" class="btn" style="margin-left:10px">Proceed to checkout</a>
+    </div>
+  </div>
+
+  <script src="products.js"></script>
+  <script>
+    function getCart(){ return JSON.parse(localStorage.getItem('cart')||'[]'); }
+    function saveCart(c){ localStorage.setItem('cart', JSON.stringify(c)); renderCart(); }
+
+    function renderCart(){
+      const cart = getCart();
+      const area = document.getElementById('cartArea');
+      if(cart.length===0){
+        area.innerHTML = '<p class="muted">Your cart is empty.</p>';
+        document.getElementById('checkoutBtn').style.display='none';
+        return;
+      }
+      document.getElementById('checkoutBtn').style.display='inline-block';
+
+      let html = `<table><thead><tr><th>Product</th><th>Price</th><th>Qty</th><th>Subtotal</th><th></th></tr></thead><tbody>`;
+      let total = 0;
+      cart.forEach(item=>{
+        const p = getProductById(item.id);
+        if(!p) return;
+        const subtotal = p.price * item.qty;
+        total += subtotal;
+        html += `<tr data-id="${p.id}">
+          <td style="min-width:260px"><strong>${p.title}</strong><div class="muted">${p.description.substring(0,80)}...</div></td>
+          <td>${p.currency}${p.price.toFixed(2)}</td>
+          <td>
+            <input type="number" min="1" value="${item.qty}" style="width:60px" onchange="changeQty('${p.id}', this.value)">
+          </td>
+          <td>${p.currency}${subtotal.toFixed(2)}</td>
+          <td><button class="btn" onclick="removeItem('${p.id}')">Remove</button></td>
+        </tr>`;
+      });
+      html += `</tbody></table>`;
+      html += `<div style="margin-top:12px"><strong>Total: £${total.toFixed(2)}</strong></div>`;
+      area.innerHTML = html;
+    }
+
+    function changeQty(id, qty){
+      qty = parseInt(qty) || 1;
+      const cart = getCart();
+      const it = cart.find(i=>i.id===id);
+      if(it) it.qty = qty;
+      saveCart(cart);
+    }
+    function removeItem(id){
+      let cart = getCart();
+      cart = cart.filter(i=>i.id !== id);
+      saveCart(cart);
+    }
+
+    document.getElementById('checkoutBtn').addEventListener('click', ()=>{
+      window.location.href = 'checkout.html';
+    });
+
+    renderCart();
+  </script>
 </body>
 </html>

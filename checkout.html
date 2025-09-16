@@ -1,7 +1,117 @@
 <!DOCTYPE html>
 <html lang="en">
-<head><meta charset="utf-8"><title>Checkout</title></head>
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Checkout | Grafted E-Bikes</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    body{background:#0F0F0F;color:#fff;font-family:Roboto}
+    .container{max-width:900px;margin:0 auto;padding:20px}
+    .btn{background:#EBFF1A;color:#000;padding:10px 16px;border-radius:6px;border:none;cursor:pointer}
+    .muted{color:#bbb}
+    .payment-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px}
+    .card{background:#1A1A1A;padding:16px;border-radius:8px}
+    input,select,textarea{width:100%;padding:8px;margin-top:6px;background:#111;border:1px solid #222;color:#fff;border-radius:6px}
+  </style>
+</head>
 <body>
-  <h1>Checkout Page</h1>
+  <div class="container">
+    <h1>Checkout</h1>
+    <div id="summaryArea"></div>
+
+    <h2 style="margin-top:20px">Billing & Shipping</h2>
+    <div class="card">
+      <label>Full name</label>
+      <input id="name" placeholder="John Doe">
+      <label>Email</label>
+      <input id="email" placeholder="you@example.com">
+      <label>Shipping address</label>
+      <textarea id="address" rows="2" placeholder="Street, City, Country"></textarea>
+    </div>
+
+    <h2 style="margin-top:20px">Payment Method</h2>
+    <div class="payment-grid">
+      <div class="card">
+        <h3>PayPal (recommended)</h3>
+        <p class="muted">You will be redirected to PayPal to complete payment (simulated in this demo).</p>
+        <button class="btn" onclick="payWithPayPal()">Pay with PayPal</button>
+      </div>
+      <div class="card">
+        <h3>Cryptocurrency</h3>
+        <p class="muted">Send exact amount to the wallet address. Copy button available.</p>
+        <p><strong>Wallet:</strong> <code id="wallet">0xDEMOCRYPTOADDRESS12345</code></p>
+        <button class="btn" onclick="copyWallet()">Copy wallet address</button>
+      </div>
+    </div>
+
+    <div style="margin-top:16px">
+      <button id="placeOrderBtn" class="btn">Place order (simulate)</button>
+    </div>
+
+    <div id="message" style="margin-top:20px"></div>
+  </div>
+
+  <script src="products.js"></script>
+  <script>
+    function getCart(){ return JSON.parse(localStorage.getItem('cart')||'[]'); }
+    function clearCart(){ localStorage.removeItem('cart'); }
+
+    function renderSummary(){
+      const cart = getCart();
+      if(cart.length===0){
+        document.getElementById('summaryArea').innerHTML = '<p class="muted">Your cart is empty. <a href="index.html">Go shopping</a></p>';
+        document.getElementById('placeOrderBtn').style.display = 'none';
+        return;
+      }
+      let html = '<div class="card"><h3>Order summary</h3><ul>';
+      let total = 0;
+      cart.forEach(it=>{
+        const p = getProductById(it.id);
+        if(!p) return;
+        const subtotal = p.price * it.qty;
+        total += subtotal;
+        html += `<li style="margin-bottom:8px">${p.title} × ${it.qty} — ${p.currency}${subtotal.toFixed(2)}</li>`;
+      });
+      html += `</ul><p style="margin-top:10px"><strong>Total: £${total.toFixed(2)}</strong></p></div>`;
+      document.getElementById('summaryArea').innerHTML = html;
+    }
+
+    function payWithPayPal(){
+      showMessage('Redirecting to PayPal (simulation)...');
+      setTimeout(()=> {
+        showMessage('Payment completed via PayPal (simulated). Order placed.');
+        clearCart();
+        setTimeout(()=> window.location.href = 'index.html', 1800);
+      }, 1200);
+    }
+
+    function copyWallet(){
+      const txt = document.getElementById('wallet').textContent;
+      navigator.clipboard.writeText(txt).then(()=> showMessage('Wallet address copied to clipboard.'));
+    }
+
+    document.getElementById('placeOrderBtn').addEventListener('click', ()=>{
+      const name = document.getElementById('name').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const address = document.getElementById('address').value.trim();
+      if(!name || !email || !address){
+        showMessage('Please fill name, email and shipping address before placing order.');
+        return;
+      }
+      showMessage('Placing your order...');
+      setTimeout(()=>{
+        showMessage('Order placed! We sent order details to ' + email + '. (This is a simulation)');
+        clearCart();
+        setTimeout(()=> window.location.href = 'index.html', 1500);
+      }, 1200);
+    });
+
+    function showMessage(txt){
+      const m = document.getElementById('message'); m.textContent = txt;
+    }
+
+    renderSummary();
+  </script>
 </body>
 </html>

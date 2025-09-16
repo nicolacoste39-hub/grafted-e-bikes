@@ -4,10 +4,85 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Home | Grafted E-Bikes</title>
+  <meta name="description" content="Buy your Surron E-Bike with huge discounts at graftedebikes.com">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:Roboto, sans-serif;background:#0F0F0F;color:#fff}
+    .container{max-width:1200px;margin:0 auto;padding:20px}
+    header{display:flex;align-items:center;justify-content:space-between;padding:20px 0}
+    .logo a{font-weight:700;color:#fff;text-decoration:none}
+    nav ul{display:flex;gap:20px;list-style:none}
+    .cart-count{background:#EBFF1A;color:#000;border-radius:50%;padding:4px 8px;font-weight:700;margin-left:6px}
+    .products-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:24px;margin-top:30px}
+    .product-card{background:#1A1A1A;padding:12px;border-radius:10px;overflow:hidden}
+    .product-card img{width:100%;height:180px;object-fit:cover;border-radius:6px}
+    .product-title{font-size:18px;margin:10px 0}
+    .product-price{color:#EBFF1A;font-weight:700}
+    .btn{background:#EBFF1A;color:#000;padding:10px 14px;border-radius:6px;display:inline-block;text-decoration:none;border:none;cursor:pointer}
+    footer{margin-top:40px;padding-top:20px;border-top:1px solid #222;color:#999}
+  </style>
 </head>
 <body>
-  <h1>Grafted E-Bikes</h1>
-  <p>Welcome to the demo e-commerce site.</p>
-  <a href="product.html?id=stark-varg-2024">View Stark Varg</a>
+  <div class="container">
+    <header>
+      <div class="logo"><a href="index.html">Grafted <span style="color:#EBFF1A">E-Bikes</span></a></div>
+      <nav>
+        <ul>
+          <li><a href="index.html">Home</a></li>
+          <li><a href="#products">Products</a></li>
+          <li><a href="cart.html">Cart <span id="cartCount" class="cart-count">0</span></a></li>
+        </ul>
+      </nav>
+    </header>
+
+    <section class="hero">
+      <h1>Premium Electric Bikes</h1>
+      <p>Experience the future of mobility with our high-performance Surron e-bikes. Get yours today with exclusive discounts!</p>
+      <a class="btn" href="#products">Shop Now</a>
+    </section>
+
+    <section id="products" class="products-section">
+      <h2 style="margin-top:30px">Featured Products</h2>
+      <div class="products-grid" id="productsGrid"></div>
+    </section>
+
+    <footer>
+      <p>&copy; 2025 Grafted E-Bikes. All rights reserved. Contact: info@graftedebikes.com</p>
+    </footer>
+  </div>
+
+  <script src="products.js"></script>
+  <script>
+    const grid = document.getElementById('productsGrid');
+    function renderProducts(){
+      PRODUCTS.forEach(p=>{
+        const card = document.createElement('div');
+        card.className = 'product-card';
+        card.innerHTML = `
+          <img src="images/${p.img}" alt="${p.title}" onerror="this.src='images/placeholder.png'">
+          <h3 class="product-title">${p.title}</h3>
+          <p class="product-price">${p.currency}${p.price.toFixed(2)}</p>
+          <p>${p.description.substring(0,90)}...</p>
+          <div style="margin-top:10px">
+            <a class="btn" href="product.html?id=${encodeURIComponent(p.id)}">View product</a>
+            <button class="btn" style="margin-left:8px" onclick="addToCartQuick('${p.id}')">Add to cart</button>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    function getCart(){
+      try { return JSON.parse(localStorage.getItem('cart')||'[]'); } catch(e){ return []; }
+    }
+    function saveCart(cart){ localStorage.setItem('cart', JSON.stringify(cart)); updateCartCount(); }
+    function updateCartCount(){ const c = getCart().reduce((s,i)=>s+i.qty,0); document.getElementById('cartCount').textContent = c; }
+    function addToCartQuick(id){ const cart = getCart(); const item = cart.find(i=>i.id===id); if(item) item.qty++; else cart.push({id, qty:1}); saveCart(cart); alert('Added to cart'); }
+
+    renderProducts();
+    updateCartCount();
+  </script>
 </body>
 </html>
